@@ -39,7 +39,7 @@ def test_list_all_equipment(client):
     assert "Tents" in equipment_names
 
 
-    #Test 2: Add equipment
+#Test 2: Add equipment
 def test_add_equipment(client):
     equipment_item = {
         "name": "Snowboard",
@@ -61,3 +61,27 @@ def test_add_equipment(client):
 
     equipment_list = result.get_json()
     assert any(item["name"] == "Snowboard" for item in equipment_list)
+
+#Test 3: Delete Equipment
+def test_delete_equipment(client):
+    equipment_item = {
+        "name": "Snowshoes",
+        "category": "Winter Sports",
+        "total_units": 60
+    }
+
+    result = client.post("/equipment", json=equipment_item)
+    assert result.status_code == 201
+
+    added_item = result.get_json()
+    equipment_id = added_item["id"]
+
+    result = client.delete(f"/equipment/{equipment_id}")
+    assert result.status_code in[200, 204]
+
+    result = client.get("/equipment")
+    assert result.status_code == 200
+
+    equipment_list = result.get_json()
+    equipment_id = [item["id"] for item in equipment_list]
+    assert equipment_id not in equipment_id
