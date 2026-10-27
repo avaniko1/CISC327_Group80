@@ -33,10 +33,18 @@ def test_list_all_equipment(client):
 
     assert len(equipment_list) == 3
 
-    equipment_names = [item["name"] for item in equipment_list]
-    assert "Skis" in equipment_names
-    assert "Canoe" in equipment_names
-    assert "Tents" in equipment_names
+    skis_item = next((item for item in equipment_list if item["name"] == "Skis"), None)
+    assert skis_item["category"] == "Winter Sports"
+    assert skis_item["total_units"] == 15
+
+    canoe_item = next((item for item in equipment_list if item["name"] == "Canoe"), None)
+    assert canoe_item["category"] == "Water Activities"
+    assert canoe_item["total_units"] == 10
+
+    tents_item = next((item for item in equipment_list if item["name"] == "Tents"), None)
+    assert tents_item["category"] == "Camping"
+    assert tents_item["total_units"] == 20
+
 
 
 #Test 2: Add equipment
@@ -60,7 +68,13 @@ def test_add_equipment(client):
     assert result.status_code == 200
 
     equipment_list = result.get_json()
-    assert any(item["name"] == "Snowboard" for item in equipment_list)
+
+    added_item = next((item for item in equipment_list if item["name"] == "Snowboard"), None)
+
+    assert added_item["name"] == "Snowboard"
+    assert added_item["category"] == "Winter Sports"
+    assert added_item["total_units"] == 150
+    assert added_item["available_units"] == 150
 
 #Test 3: Delete Equipment
 def test_delete_equipment(client):
@@ -83,8 +97,8 @@ def test_delete_equipment(client):
     assert result.status_code == 200
 
     equipment_list = result.get_json()
-    equipment_id = [item["id"] for item in equipment_list]
-    assert equipment_id not in equipment_id
+
+    assert len(equipment_list) == 0
 
 #Test 4: Check out equipment
 def test_checkout_equipment(client):
