@@ -140,4 +140,61 @@ def test_checkout_equipment(client):
         if item["id"] == equipment_id:
             assert item["available_units"] == 74
 
+#Test 5: Get one equipment
 
+def test_get_one_equipment(client):
+    equipment_item = {
+        "name": "Helmet",
+        "category": "Safety Gear",
+        "total_units": 30
+    }
+
+
+    result = client.post("/equipment", json=equipment_item)
+    assert result.status_code == 201
+
+    new_item = result.get_json()
+    equipment_id = new_item["id"]
+
+    result = client.get(f"/equipment/{equipment_id}")
+    assert result.status_code == 200
+
+    item = result.get_json()
+    assert item["id"] == equipment_id
+    assert item["name"] == "Helmet"
+    assert item["category"] == "Safety Gear"
+    assert item["total_units"] == 30
+    assert item["available_units"] == 30
+    assert item["available_units"] == 30
+
+    #Test 6: List all Rentals
+
+def test_list_all_rentals(client):
+    equipment_item = {
+        "name": "Snowboard",
+        "category": "Winter Sports",
+        "total_units": 65
+    }
+    
+    result = client.post("/equipment", json=equipment_item)
+    assert result.status_code == 201
+    equipment_id = result.get_json()["id"]
+
+    renter_info = client.post("/renters", json=
+    {"name": "Ava Nikolaus", "email": "ava.niko@cisc.com"})
+
+    assert renter_info.status_code == 201
+    renter_id = renter_info.get_json()["id"]
+
+    rental_info = client.post("/rentals", json=
+    {"equipment_id": equipment_id, "renter_id": renter_id})
+
+    assert rental_info.status_code == 201
+
+    result = client.get("/rentals")
+    assert result.status_code == 200
+
+    rentals_list = result.get_json()
+    assert len(rentals_list) == 1
+    assert rentals_list[0]["equipment_id"] == equipment_id
+    assert rentals_list[0]["renter_id"] == renter_id
