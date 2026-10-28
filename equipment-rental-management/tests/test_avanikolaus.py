@@ -167,34 +167,39 @@ def test_get_one_equipment(client):
     assert item["available_units"] == 30
     assert item["available_units"] == 30
 
-    #Test 6: List all Rentals
+ #Test 6: Look Up Rentals
 
-def test_list_all_rentals(client):
+def test_look_up_rentals(client):
     equipment_item = {
         "name": "Snowboard",
         "category": "Winter Sports",
         "total_units": 65
     }
-    
-    result = client.post("/equipment", json=equipment_item)
-    assert result.status_code == 201
-    equipment_id = result.get_json()["id"]
 
-    renter_info = client.post("/renters", json=
-    {"name": "Ava Nikolaus", "email": "ava.niko@cisc.com"})
+    equipment_item = client.post("/equipment", json=equipment_item)
+    assert equipment_item.status_code == 201
+    equipment_id = equipment_item.get_json()["id"]
+
+    renter_info = client.post("/renters", json={
+        "name": "Ava Nikolaus",
+        "email": "ava.niko@cisc.com"
+    })
 
     assert renter_info.status_code == 201
     renter_id = renter_info.get_json()["id"]
 
-    rental_info = client.post("/rentals", json=
-    {"equipment_id": equipment_id, "renter_id": renter_id})
+    rental_info = client.post("/rentals", json={
+        "equipment_id": equipment_id,
+        "renter_id": renter_id
+    })
 
     assert rental_info.status_code == 201
 
-    result = client.get("/rentals")
-    assert result.status_code == 200
+    response = client.get(f"/rentals?renter_id={renter_id}")
+    assert response.status_code == 200
 
-    rentals_list = result.get_json()
-    assert len(rentals_list) == 1
-    assert rentals_list[0]["equipment_id"] == equipment_id
-    assert rentals_list[0]["renter_id"] == renter_id
+    rentals = response.get_json()
+    assert len(rentals) == 1
+    assert rentals[0]["equipment_id"] == equipment_id
+    assert rentals[0]["renter_id"] == renter_id
+
