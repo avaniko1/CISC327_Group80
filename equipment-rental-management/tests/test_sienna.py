@@ -5,7 +5,46 @@ def test_list_renter(client):
     assert response.status_code == 200
     assert response.get_json() == []
     
+
+    def test_show_all_renter(client):
     """Show all renters
+    """
+    renter_1 = {
+        "name": "James Parker",
+        "email": "j.parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    assert create_resp.status_code == 201
+    
+    response = client.get("/renters")
+    assert response.status_code == 200
+
+        renter_2 = {
+        "name": "James Parker",
+        "email": "j.2parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_2)
+    assert create_resp.status_code == 201
+    renter_3 = {
+        "name": "James Parker",
+        "email": "j.3parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_3)
+    assert create_resp.status_code == 201
+    renter_4 = {
+        "name": "James Parker",
+        "email": "j.4parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    assert create_resp.status_code == 201
+
+    response = client.get("/renters")
+    assert response.status_code == 200
+    
+    """Get one renter
+    """
+
+    """Get one nonexistent renter
     """
     
 def test_create_renter(client):
@@ -102,11 +141,53 @@ def test_create_dup_renter(client):
     
     create_resp2 = client.post("/renters", json=renter_1)
     assert create_resp2.status_code != 201
-    
-  """delete a renter
-  """
 
-  """delete an already deleted renter
+def test_delete_renter(client):
+    """delete a renter
+    """
+    renter_1 = {
+        "name": "Julian Andrews",
+        "email": "j.andrews@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    assert create_resp.status_code == 201
+
+    renter_id = create_resp.get_json()["id"]
+
+    del_resp = client.delete("/renters", {renter_id})
+    assert del_resp.status_code == 204
+
+def test_doub_delete_renter(client):
+    """delete an already deleted renter
+    """
+    renter_1 = {
+        "name": "Julian Andrews",
+        "email": "j.andrews@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    assert create_resp.status_code == 201
+
+    renter_id = create_resp.get_json()["id"]
+
+    del_resp = client.delete("/renters", {renter_id})
+    assert del_resp.status_code == 204
+
+    del_resp = client.delete("/renters", {renter_id})
+    assert del_resp.status_code != 204
+
+def test_delete_nonex_renter(client):
+    """delete a nonexistent renter
+    """
+
+    renter_id = 1
+
+    del_resp = client.delete("/renters", {renter_id})
+    assert del_resp.status_code != 204
+
+
+  """update a renter
+  """
+  """update a nonexistent renter
   """
 
 def test_list_rentals(client):
@@ -116,9 +197,14 @@ def test_list_rentals(client):
     assert response.status_code == 200
     assert response.get_json() == []
 
+  """Show all rentals
+  """
+
   """return rental
   """
+
   """Check returning already returned rental
   """
-  """Make nonexistent rental as returned
+
+  """Return nonexistent rental
   """
