@@ -154,7 +154,7 @@ def test_delete_renter(client):
 
     renter_id = create_resp.get_json()["id"]
 
-    del_resp = client.delete("/renters", {renter_id})
+    del_resp = client.delete("/renters", "renter_id":renter_id)
     assert del_resp.status_code == 204
 
 def test_doub_delete_renter(client):
@@ -169,19 +169,19 @@ def test_doub_delete_renter(client):
 
     renter_id = create_resp.get_json()["id"]
 
-    del_resp = client.delete("/renters", {renter_id})
+    del_resp = client.delete("/renters", "renter_id":renter_id)
     assert del_resp.status_code == 204
 
-    del_resp = client.delete("/renters", {renter_id})
+    del_resp = client.delete("/renters", {"renter_id":renter_id)
     assert del_resp.status_code != 204
 
 def test_delete_nonex_renter(client):
     """delete a nonexistent renter
     """
 
-    renter_id = 1
+    "renter_id" : 1
 
-    del_resp = client.delete("/renters", {renter_id})
+    del_resp = client.delete("/renters", "renter_id":renter_id)
     assert del_resp.status_code != 204
 
 
@@ -197,15 +197,15 @@ def test_update_renter(client):
 
     renter_id = create_resp.get_json()["id"]
 
-    del_resp = client.update("/renters", {renter_id})
+    del_resp = client.update("/renters", "renter_id" : renter_id)
     assert del_resp.status_code == 200
 
 def test_update_nonex_renter(client):
     """update a nonexistent renter
     """
-    renter_id = 1
+    "renter_id" : 1
 
-    del_resp = client.update("/renters", {renter_id})
+    del_resp = client.update("/renters", "renter_id":renter_id)
     assert del_resp.status_code != 200
 
 def test_list_rentals(client):
@@ -215,14 +215,105 @@ def test_list_rentals(client):
     assert response.status_code == 200
     assert response.get_json() == []
 
-  """Show all rentals
-  """
+def test_show_all_rentals(client):
+    """show all rentals
+    """
+    renter_1 = {
+        "name": "James Parker",
+        "email": "j.parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    renter_id = create_resp.get_json()["id"]
 
-  """return rental
-  """
+    equip = {
+        "name": "Kayak",
+        "category": "Boats",
+        "total_units": 15,
+    }
+    create_resp2 = client.post("/equipment", json=equip)
+    equipment_id = create_resp2.get_json()["id"]
 
-  """Check returning already returned rental
-  """
+    create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
+    create_resp4=client.get("/rentals)
+    assert resp4.status_code == 200
+    equip = {
+        "name": "Paddleboard",
+        "category": "Boats",
+        "total_units": 13,
+    }
+    create_resp2 = client.post("/equipment", json=equip)
+    equipment_id = create_resp2.get_json()["id"]
+    create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
+    equip = {
+        "name": "Canoe",
+        "category": "Boats",
+        "total_units": 10,
+    }
+    create_resp2 = client.post("/equipment", json=equip)
+    equipment_id = create_resp2.get_json()["id"]
+    create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
+    equip = {
+        "name": "Sailboat",
+        "category": "Boats",
+        "total_units": 8,
+    }
+    create_resp2 = client.post("/equipment", json=equip)
+    equipment_id = create_resp2.get_json()["id"]
+    create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
 
-  """Return nonexistent rental
-  """
+    create_resp4=client.get("/rentals")
+    assert resp4.status_code == 200    
+
+def test_return_rental(client):
+    """show return rental
+    """
+    renter_1 = {
+        "name": "James Parker",
+        "email": "j.parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    renter_id = create_resp.get_json()["id"]
+
+    equip = {
+        "name": "Kayak",
+        "category": "Boats",
+        "total_units": 15,
+    }
+    create_resp2 = client.post("/equipment", json=equip)
+    equipment_id = create_resp2.get_json()["id"]
+
+    create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
+    create_resp4=client.put("/rentals")
+    assert resp4.status_code == 200
+
+def test_return_returned_rental(client):
+    """show return returned rental
+    """
+    renter_1 = {
+        "name": "James Parker",
+        "email": "j.parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    renter_id = create_resp.get_json()["id"]
+
+    equip = {
+        "name": "Kayak",
+        "category": "Boats",
+        "total_units": 15,
+    }
+    create_resp2 = client.post("/equipment", json=equip)
+    equipment_id = create_resp2.get_json()["id"]
+
+    create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
+    create_resp4=client.put("/rentals", "equipment_id": equipment_id, "renter_id":renter_id)
+    create_resp4=client.put("/rentals", "equipment_id": equipment_id, "renter_id":renter_id)
+    assert resp4.status_code != 200
+
+def test_return_nonex_rental(client):
+    """show return nonexistent rental
+    """
+    "equipment_id"=1
+    "renter_id"=1
+    create_resp4=client.put("/rentals", "equipment_id": equipment_id, "renter_id":renter_id)
+    assert resp4.status_code != 200
+
