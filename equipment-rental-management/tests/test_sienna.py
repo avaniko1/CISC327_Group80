@@ -248,7 +248,7 @@ def test_show_all_rentals(client):
 
     create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
     create_resp4=client.get("/rentals")
-    assert resp4.status_code == 200
+    assert create_resp4.status_code == 200
     equip = {
         "name": "Paddleboard",
         "category": "Boats",
@@ -275,7 +275,7 @@ def test_show_all_rentals(client):
     create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
 
     create_resp4=client.get("/rentals")
-    assert resp4.status_code == 200    
+    assert create_resp4.status_code == 200    
 
 def test_return_rental(client):
     """show return rental
@@ -297,7 +297,7 @@ def test_return_rental(client):
 
     create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
     create_resp4=client.put("/rentals")
-    assert resp4.status_code == 200
+    assert create_resp4.status_code == 200
 
 def test_return_returned_rental(client):
     """show return returned rental
@@ -320,7 +320,7 @@ def test_return_returned_rental(client):
     create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
     create_resp4=client.put("/rentals", "equipment_id": equipment_id, "renter_id":renter_id)
     create_resp4=client.put("/rentals", "equipment_id": equipment_id, "renter_id":renter_id)
-    assert resp4.status_code != 200
+    assert create_resp4.status_code != 200
 
 def test_return_nonex_rental(client):
     """show return nonexistent rental
@@ -328,5 +328,5 @@ def test_return_nonex_rental(client):
     "equipment_id"=1
     "renter_id"=1
     create_resp4=client.put("/rentals", "equipment_id": equipment_id, "renter_id":renter_id)
-    assert resp4.status_code != 200
+    assert create_resp4.status_code != 200
 
