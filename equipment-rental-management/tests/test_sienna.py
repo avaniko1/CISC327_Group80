@@ -41,11 +41,24 @@ def test_list_renter(client):
     response = client.get("/renters")
     assert response.status_code == 200
     
+    def test_get_renter(client):
     """Get one renter
     """
-
+    renter_1 = {
+        "name": "James Parker",
+        "email": "j.parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    renter_id = create_resp.get_json()["id"]
+    response = client.get("/renters", "renter_id":renter_id)
+    assert response.status_code == 200
+    def test_get_nonex_renter(client):
+        
     """Get one nonexistent renter
     """
+    "renter_id"=1
+    response = client.get("/renters", "renter_id":renter_id)
+    assert response.status_code != 200
     
 def test_create_renter(client):
     """Create a renter successfully
@@ -234,7 +247,7 @@ def test_show_all_rentals(client):
     equipment_id = create_resp2.get_json()["id"]
 
     create_resp3=client.post("/equipment","equipment_id": equipment_id, "renter_id": renter_id)
-    create_resp4=client.get("/rentals)
+    create_resp4=client.get("/rentals")
     assert resp4.status_code == 200
     equip = {
         "name": "Paddleboard",
