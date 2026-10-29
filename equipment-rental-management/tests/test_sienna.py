@@ -185,10 +185,28 @@ def test_delete_nonex_renter(client):
     assert del_resp.status_code != 204
 
 
-  """update a renter
-  """
-  """update a nonexistent renter
-  """
+def test_update_renter(client):
+    """update a renter
+    """
+    renter_1 = {
+        "name": "Julian Andrews",
+        "email": "j.andrews@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    assert create_resp.status_code == 201
+
+    renter_id = create_resp.get_json()["id"]
+
+    del_resp = client.update("/renters", {renter_id})
+    assert del_resp.status_code == 200
+
+def test_update_nonex_renter(client):
+    """update a nonexistent renter
+    """
+    renter_id = 1
+
+    del_resp = client.update("/renters", {renter_id})
+    assert del_resp.status_code != 200
 
 def test_list_rentals(client):
     """Return an empty list when no rentals have been made
