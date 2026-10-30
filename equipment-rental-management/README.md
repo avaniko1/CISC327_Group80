@@ -55,6 +55,7 @@ app working without a REST client, and calls the same in-memory store.
 | POST | `/rentals` | Check out equipment (`equipment_id`, `renter_id`) |
 | PUT | `/rentals/<id>/return` | Return rented equipment |
 | GET | `/rentals?renter_id=&equipment_id=` | Look up rentals |
+| GET| /rentals/overdue| Return overdue rentals that have not been returned|
 
 ## Tests
 
