@@ -47,6 +47,7 @@ app working without a REST client, and calls the same in-memory store.
 | GET | `/equipment/<id>` | Get one equipment item |
 | PUT | `/equipment/<id>` | Update an equipment item |
 | DELETE | `/equipment/<id>` | Delete an equipment item |
+| PATCH | `/equipment/<id>` | Mark equipment as damaged or out of service |
 | GET | `/renters` | List all renters |
 | POST | `/renters` | Create a renter |
 | GET | `/renters/<id>` | Get one renter |
@@ -55,7 +56,6 @@ app working without a REST client, and calls the same in-memory store.
 | POST | `/rentals` | Check out equipment (`equipment_id`, `renter_id`) |
 | PUT | `/rentals/<id>/return` | Return rented equipment |
 | GET | `/rentals?renter_id=&equipment_id=` | Look up rentals |
-| PATCH | `/equipment/<id>` | Mark equipment as damaged or out of service |
 
 ## Tests
 
