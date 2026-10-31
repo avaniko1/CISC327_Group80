@@ -22,6 +22,8 @@ def create_equipment():
         total_units=data.get("total_units", 1),
         available_units=data.get("total_units", 1),
         is_available=data.get("is_available", True),
+        out_of_service_units=data.get("is_available", False),
+        is_damaged_units=data.get("is_damaged", True),
     )
     store.equipment[equipment_id] = item
     return jsonify(item.to_dict()), 201
@@ -71,7 +73,10 @@ def set_equipment_status(equipment_id):
     if item is None:
         return jsonify({"error": "Equipment not found"}), 404
     data = request.get_json()
-    item.is_available = data["is_available"]
+    if is_damaged is True:
+        item.is_available=data["is_available"]-data["is_damaged"]
+    else:
+        item.is_available = data["is_available"]
     return jsonify(item.to_dict())
 
 
