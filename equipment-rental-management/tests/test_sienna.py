@@ -329,4 +329,107 @@ def test_return_nonex_rental(client):
     renter_id=1
     create_resp4=client.put(f"/equipment/{equipment_id},{renter_id}")
     assert create_resp4.status_code == 404
+    
+def test_set_outofservicedamaged(client):
+    """Set an item as out of service and damaged
+    """
+    equip = {
+        "name": "Kayak",
+        "category": "Boats",
+        "total_units": 15,
+    }
+    create_resp = client.post("/equipment", json=equip)
+    equipment_id = create_resp.get_json()["id"]
+
+    
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_available": False, "out_of_service_units": 1}
+    )
+    
+    avail_resp = client.get(f"/equipment/{equipment_id}/availability")
+    assert avail_resp.status_code == 200
+    data = avail_resp.get_json()
+    assert data["available_units"] == 14
+    assert data["is_available"] is False
+
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_damaged": True, "is_damaged_units": 1}
+    )
+    avail_resp = client.get(f"/equipment/{equipment_id}/availability")
+    assert avail_resp.status_code == 200
+    data = avail_resp.get_json()
+    assert data["available_units"] == 13
+    assert data["is_available"] is False
+
+def test_set_nonext_equip_outofservicedamaged(client):
+    """Set a nonexistent item as out of service and damaged
+    """
+    equipment_id=1
+
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_available": False, "out_of_service_units": 1}
+    )
+    
+    avail_resp = client.get(f"/equipment/{equipment_id}/availability")
+    assert avail_resp.status_code == 404
+
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_damaged": False, "is_damaged_units": 1}
+    )
+    avail_resp = client.get(f"/equipment/{equipment_id}/availability")
+    assert avail_resp.status_code == 404
+    
+def test_set_outofservicedamaged_and_rent(client):
+    """Set an item as out of service and damaged and then try to rent it
+    """
+    equip = {
+        "name": "Kayak",
+        "category": "Boats",
+        "total_units": 2,
+    }
+    create_resp = client.post("/equipment", json=equip)
+    equipment_id = create_resp.get_json()["id"]
+
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_available": False, "out_of_service_units": 1}
+    )
+    
+    avail_resp = client.get(f"/equipment/{equipment_id}/availability")
+    assert avail_resp.status_code == 200
+    data = avail_resp.get_json()
+    assert data["available_units"] == 1
+    assert data["is_available"] is False
+
+   
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_damaged": True, "is_damaged_units": 1}
+    )
+    avail_resp = client.get(f"/equipment/{equipment_id}/availability")
+    assert avail_resp.status_code == 200
+    data = avail_resp.get_json()
+    assert data["available_units"] == 0
+    assert data["is_available"] is False
+
+    renter_1 = {
+        "name": "James Parker",
+        "email": "j.parker@gmail.com",
+    }
+    create_resp = client.post("/renters", json=renter_1)
+    renter_id = create_resp.get_json()["id"]
+
+    create_resp3 = client.post(f"/rentals", json={"equipment_id": equipment_id, "renter_id": renter_id})
+    assert create_resp3.status_code == 404
+
+
+    
+
+
+    
+    
 
