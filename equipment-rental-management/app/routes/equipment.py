@@ -22,8 +22,9 @@ def create_equipment():
         total_units=data.get("total_units", 1),
         available_units=data.get("total_units", 1),
         is_available=data.get("is_available", True),
-        out_of_service_units=data.get("is_available", False),
-        is_damaged_units=data.get("is_damaged", True),
+        out_of_service_units=0,
+        is_damaged_units=0,
+        is_damaged=data.get("is_damaged", False),
     )
     store.equipment[equipment_id] = item
     return jsonify(item.to_dict()), 201
@@ -73,12 +74,27 @@ def set_equipment_status(equipment_id):
     if item is None:
         return jsonify({"error": "Equipment not found"}), 404
     data = request.get_json()
-    if is_damaged is True:
-        item.is_available=data["is_available"]-data["is_damaged"]
-    else:
-        item.is_available = data["is_available"]
-    return jsonify(item.to_dict())
 
+    if "is_available" in data:
+        item.is_available = data["is_available"]
+    if "is_damaged" in data:
+        item.is_damaged = data["is_damaged"]
+        
+    if "is_damaged_units" in data:
+        item.is_damaged_units = data["is_damaged_units"]
+    if "out_of_service_units" in data:
+        item.out_of_service_units = data["out_of_service_units"]
+    
+    if not hasattr(item, "is_damaged_units") or item.is_damaged_units is None:
+        item.is_damaged_units = 0
+    if not hasattr(item, "out_of_service_units") or item.out_of_service_units is None:
+        item.out_of_service_units = 0
+
+    if item.is_damaged is True or item.is_available is False:
+        item.available_units = item.total_units - item.is_damaged_units - item.out_of_service_units
+    else:
+        item.available_units = item.total_units
+    return jsonify(item.to_dict())
 
 @equipment_bp.route("/<int:equipment_id>/availability", methods=["GET"])
 def get_availability(equipment_id):

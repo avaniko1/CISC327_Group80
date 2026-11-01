@@ -341,43 +341,47 @@ def test_set_outofservicedamaged(client):
     create_resp = client.post("/equipment", json=equip)
     equipment_id = create_resp.get_json()["id"]
 
-    is_available=False
-    oos_resp=client.patch(f"/equipment{equipment_id}")
+    
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_available": False, "out_of_service_units": 1}
+    )
     
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 200
     data = avail_resp.get_json()
     assert data["available_units"] == 14
-    assert data["is_available"] is True
+    assert data["is_available"] is False
 
-    is_damaged=True
-    oos_resp=client.patch(f"/equipment{equipment_id}")
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_damaged": True, "is_damaged_units": 1}
+    )
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 200
     data = avail_resp.get_json()
     assert data["available_units"] == 13
-    assert data["is_available"] is True
+    assert data["is_available"] is False
 
 def test_set_nonext_equip_outofservicedamaged(client):
     """Set a nonexistent item as out of service and damaged
     """
     equipment_id=1
-    is_available=False
-    oos_resp=client.patch(f"/equipment{equipment_id}")
+
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_available": False, "out_of_service_units": 1}
+    )
     
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 404
-    data = avail_resp.get_json()
-    assert data["available_units"] != 14
-    assert data["is_available"] is False
 
-    is_damaged=True
-    oos_resp=client.patch(f"/equipment{equipment_id}")
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_damaged": False, "is_damaged_units": 1}
+    )
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 404
-    data = avail_resp.get_json()
-    assert data["available_units"] != 13
-    assert data["is_available"] is False
     
 def test_set_outofservicedamaged_and_rent(client):
     """Set an item as out of service and damaged and then try to rent it
@@ -390,17 +394,22 @@ def test_set_outofservicedamaged_and_rent(client):
     create_resp = client.post("/equipment", json=equip)
     equipment_id = create_resp.get_json()["id"]
 
-    is_available=False
-    oos_resp=client.patch(f"/equipment{equipment_id}")
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_available": False, "out_of_service_units": 1}
+    )
     
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 200
     data = avail_resp.get_json()
     assert data["available_units"] == 1
-    assert data["is_available"] is True
+    assert data["is_available"] is False
 
-    is_damaged=True
-    oos_resp=client.patch(f"/equipment{equipment_id}")
+   
+    oos_resp = client.patch(
+        f"/equipment/{equipment_id}/status", 
+        json={"is_damaged": True, "is_damaged_units": 1}
+    )
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 200
     data = avail_resp.get_json()
@@ -413,12 +422,9 @@ def test_set_outofservicedamaged_and_rent(client):
     }
     create_resp = client.post("/renters", json=renter_1)
     renter_id = create_resp.get_json()["id"]
-    create_resp2 = client.post("/equipment", json=equip)
-    equipment_id = create_resp2.get_json()["id"]
 
-    create_resp3=client.post(f"/equipment/{equipment_id},{renter_id}")
-    create_resp4=client.put("/rentals")
-    assert create_resp4.status_code == 404
+    create_resp3 = client.post(f"/rentals", json={"equipment_id": equipment_id, "renter_id": renter_id})
+    assert create_resp3.status_code == 404
 
 
     
