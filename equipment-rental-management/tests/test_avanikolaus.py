@@ -1,4 +1,5 @@
-
+from datetime import date, timedelta
+from app import store
 
 #Test 1: List all equipment
 def test_list_all_equipment(client):
@@ -344,3 +345,86 @@ def test_update_equipment(client):
     assert equipment["category"] == "Camping"
     assert equipment["total_units"] == 10
     assert equipment["available_units"] == 10
+
+
+#Test 8: Recognize Overdue Equipment
+
+def test_recognize_overdue_equipment(client):
+    equipment = {
+        "name": "Jet Ski",
+        "category": "Water Activities",
+        "total_units": 35
+    }
+
+    result = client.post("/equipment", json=equipment)
+    assert result.status_code == 201
+    equipment_id = result.get_json()["id"]
+
+    renter_info = {
+        "name": "Ava Nikolaus",
+        "email": "ava.niko@cisc.com"
+    }
+
+    result = client.post("/renters", json=renter_info)
+    assert result.status_code == 201
+    renter_id = result.get_json()["id"]
+
+    checkout = {
+        "equipment_id": equipment_id,
+        "renter_id": renter_id,
+    }
+
+    result = client.post("/rentals", json=checkout)
+    assert result.status_code == 201
+    rental_id = result.get_json()["id"]
+
+    store.rentals[rental_id].due_date = date.today() - timedelta(days=1)
+
+    result = client.get("/rentals/overdue")
+    assert result.status_code == 200
+
+    overdue_rentals = result.get_json()
+
+    assert len(overdue_rentals) == 1
+    assert overdue_rentals[0]["id"] == rental_id
+    assert overdue_rentals[0]["equipment_id"] == equipment_id
+
+#Test 8: Recognize Equipment Returned On Time
+def test_recognize_equipment_returned_on_time(client):
+    equipment = {
+        "name": "Jet Ski",
+        "category": "Water Activities",
+        "total_units": 35
+    }
+    
+    result = client.post("/equipment", json=equipment)
+    assert result.status_code == 201
+    equipment_id = result.get_json()["id"]
+
+    renter_info = {
+        "name": "Ava Nikolaus",
+        "email": "ava.niko@cisc.com"
+    }
+    result = client.post("/renters", json=renter_info)
+    assert result.status_code == 201
+    renter_id = result.get_json()["id"]
+
+    checkout = {
+        "equipment_id": equipment_id,
+        "renter_id": renter_id,
+    }
+
+    result = client.post("/rentals", json=checkout)
+    assert result.status_code == 201
+    rental_id = result.get_json()["id"]
+
+    store.rentals[rental_id].due_date = date.today() + timedelta(days=1)
+
+    result = client.put(f"/rentals/{rental_id}/return")
+    assert result.status_code == 200
+
+    result = client.get("/rentals/overdue")
+
+    assert result.status_code == 200
+    assert result.get_json() == []
+
