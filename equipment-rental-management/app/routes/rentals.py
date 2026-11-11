@@ -5,6 +5,8 @@ from flask import Blueprint, jsonify, request
 from app import store
 from app.models.rental import Rental
 
+from notification_service import send_notification
+
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
 
@@ -27,6 +29,15 @@ def list_overdue_rentals():
     for rental in store.rentals.values():
         if rental.due_date < today and rental.return_date is None:
             overdue_rentals.append(rental)
+
+            data = request.get_json()
+            renter_email=data["email"]
+            send_notification(renter_email, "subject", "message")
+
+            counter=0
+            while send_notification == False or counter==500:
+                send_notification(renter_email, "subject", "message")
+                counter=counter+1
     
     return jsonify([r.to_dict() for r in overdue_rentals])
 
