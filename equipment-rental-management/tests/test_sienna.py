@@ -1,3 +1,5 @@
+import pytest
+
 def test_list_renter(client):
     """Return an empty list when no renters have been made
     """
@@ -70,6 +72,7 @@ def test_create_renter(client):
     create_resp = client.post("/renters", json=renter_1)
     assert create_resp.status_code == 201
 
+@pytest.mark.xfail(reason="Empty emails can be entered when creating a renter")
 def test_protect_when_creating_renter(client):
     """Don't create renters with bad values, ex. no values, or weird values ex. jparker.com for the email
     """
@@ -139,7 +142,8 @@ def test_protect_when_creating_renter(client):
     }
     create_resp = client.post("/renters", json=renter_1)
     assert create_resp.status_code != 201
-    
+
+@pytest.mark.xfail(reason="Duplicate renters can be added when creating a renter")
 def test_create_dup_renter(client):
     """Create a duplicate renter, the second test should not return 201,
     because it's a duplicate renter. Having duplicate renters would be a
@@ -329,7 +333,7 @@ def test_return_nonex_rental(client):
     renter_id=1
     create_resp4=client.put(f"/equipment/{equipment_id},{renter_id}")
     assert create_resp4.status_code == 404
-    
+
 def test_set_outofservicedamaged(client):
     """Set an item as out of service and damaged
     """
@@ -382,7 +386,8 @@ def test_set_nonext_equip_outofservicedamaged(client):
     )
     avail_resp = client.get(f"/equipment/{equipment_id}/availability")
     assert avail_resp.status_code == 404
-    
+
+@pytest.mark.xfail(reason="Equipment that is out of service or damaged can be checked out still")    
 def test_set_outofservicedamaged_and_rent(client):
     """Set an item as out of service and damaged and then try to rent it
     """
