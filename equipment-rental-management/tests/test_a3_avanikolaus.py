@@ -4,6 +4,7 @@ from unittest.mock import patch
 from app import store
 from app.models.renter import Renter
 from app.models.rental import Rental
+from datetime import date
 
 #Test 1: Testing a nonexistent email address
 def test_nonexistent_email(client, monkeypatch):
@@ -71,6 +72,7 @@ def test_notification_outage(client, monkeypatch):
 
 
 #--------COVERAGE TESTS--------
+#Equipment Route
 #Test 1
 def test_nonexistent_equipment(client):
     response = client.put("/equipment/999", json={"name": "Nonexistent Item"}
@@ -136,4 +138,88 @@ def test_reset_available_units(client):
     assert response.status_code == 200
     assert item.available_units == 6
     assert response.get_json()["available_units"] == 6
+
+#Rental Route
+#Test 1
+
+def test_list_rentals_by_equipment_id(client):
+    rental_one = Rental(
+        id = 1,
+        equipment_id = 4,
+        renter_id = 20,
+        due_date = date.today()
+    )
+
+    rental_two = Rental(
+        id = 2,
+        equipment_id = 2,
+        renter_id = 30,
+        due_date = date.today()
+    )
+
+    store.rentals[1] = rental_one
+    store.rentals[2] = rental_two
+
+    response = client.get("/rentals?equipment_id=4")
+
+    assert response.status_code == 200
+    data = response.get_json()
+    assert len(data) == 1
+    assert data[0]["id"] == 1
+    assert data[0]["equipment_id"] == 4
+
+#Test 2
+def test_checkout_nonexistent_equipment(client):
+    response = client.post("/rentals", json={
+        "equipment_id": 999,
+        "renter_id": 1
+    })
+
+    assert response.status_code == 404
+    assert response.get_json() == { "error": "Equipment not found"}
+
+#Test 3
+def test_deposit_nonexistent_rental(client):
+    response = client.put("/rentals/999/deposit/release")
+
+    assert response.status_code == 404
+    assert response.get_json() == { "error": "Rental not found"
+    }
+
+#Test 4
+def test_deposit_unreturned_rental(client):
+    rental = Rental(
+        id = 1,
+        equipment_id = 1,
+        renter_id = 1,
+        due_date = date.today()
+    )
+
+    store.rentals[1] = rental
+
+    response = client.put("/rentals/1/deposit/release")
+
+    assert response.status_code == 400
+    assert response.get_json() == {"error": "Equipment has not been returned yet"
+    }
+
+#Test 5
+def test_deposit_rental_returned(client):
+    rental = Rental(
+        id = 1,
+        equipment_id = 1,
+        renter_id = 1,
+        due_date = date.today(),
+        return_date =date.today(),
+        deposit_released = False
+    )
+
+    store.rentals[1] = rental
+
+    response = client.put("/rentals/1/deposit/release")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"rental_id": 1, "deposit_released" : True}
+    
+
 
