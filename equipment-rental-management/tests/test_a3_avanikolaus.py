@@ -5,6 +5,7 @@ from app import store
 from app.models.renter import Renter
 from app.models.rental import Rental
 from datetime import date
+from app.models.equipment import Equipment
 
 #Test 1: Testing a nonexistent email address
 def test_nonexistent_email(client, monkeypatch):
@@ -222,4 +223,71 @@ def test_deposit_rental_returned(client):
     assert response.get_json() == {"rental_id": 1, "deposit_released" : True}
     
 
+#View Route
 
+#Test 1
+def test_homepage(client):
+    response = client.get("/")
+
+    assert response.status_code == 200
+    assert b"html" in response.data
+
+#Test 2
+
+def test_return_rental_page(client):
+    equipment = Equipment(
+        id = 1,
+        name = "Skis",
+        category = "Winter Sports",
+        total_units = 6,
+        available_units = 3
+    )
+
+    rental = Rental(
+        id = 1,
+        equipment_id = 1,
+        renter_id = 1,
+        due_date = date.today()
+    )
+
+    store.equipment[1] = equipment
+    store.rentals[1] = rental
+
+    response = client.post("/ui/rentals/1/return")
+
+    assert response.status_code == 302
+    assert rental.return_date == date.today()
+    assert equipment.available_units == 4
+
+#Test 3
+def test_nonexistent_rental_return_page(client):
+    response = client.post("/ui/rentals/999/return")
+
+    assert response.status_code == 302
+    assert 999 not in store.rentals
+
+#Test 4
+def test_returned_rental_page(client):
+    equipment = Equipment(
+        id = 1,
+        name = "Skis",
+        category = "Winter Sports",
+        total_units = 6,
+        available_units = 3
+    )
+
+    rental = Rental(
+        id = 1,
+        equipment_id = 1,
+        renter_id = 1,
+        due_date = date.today(),
+        return_date = date.today()
+    )
+
+    store.equipment[1] = equipment
+    store.rentals[1] = rental
+
+    response = client.post("/ui/rentals/1/return")
+
+    assert response.status_code == 302
+    assert equipment.available_units == 3
