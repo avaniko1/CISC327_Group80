@@ -4,7 +4,7 @@ from unittest.mock import patch
 from app import store
 from app.models.renter import Renter
 from app.models.rental import Rental
-from datetime import date
+from datetime import date, timedelta
 from app.models.equipment import Equipment
 
 #Test 1: Testing a nonexistent email address
@@ -36,7 +36,7 @@ def test_nonexistent_email(client, monkeypatch):
     store.renters[1] = renter
     store.rentals[1] = rental
 
-    response = client.get("/rentals/overdue")
+    response = client.get("/rentals/overdue", json={"email": "doesnotexist@test.com"})
 
     assert response.status_code == 200
     assert response.get_json()[0]["id"] == 1
@@ -45,7 +45,7 @@ def test_nonexistent_email(client, monkeypatch):
 def test_notification_outage(client, monkeypatch):
 
     monkeypatch.setattr(
-        "app.routes.rentals.notification_available", 
+        "app.routes.rentals.is_service_available", 
         lambda: False
         )
 
@@ -66,7 +66,7 @@ def test_notification_outage(client, monkeypatch):
     store.renters[1] = renter
     store.rentals[1] = rental
 
-    response = client.get("/rentals/overdue")
+    response = client.get("/rentals/overdue", json={"email": "doesnotexist@test.com"})
 
     assert response.status_code == 200
     assert response.get_json()[0]["id"] == 1

@@ -5,7 +5,7 @@ from flask import Blueprint, jsonify, request
 from app import store
 from app.models.rental import Rental
 
-from notification_service import send_notification
+from notification_service import send_notification, is_service_available
 
 rentals_bp = Blueprint("rentals", __name__, url_prefix="/rentals")
 
@@ -35,7 +35,7 @@ def list_overdue_rentals():
             result=send_notification(renter_email, "subject", "message")
 
             counter=0
-            while result == False or counter==500:
+            while result == False and counter < 500:
                 result=send_notification(renter_email, "subject", "message")
                 counter=counter+1
     

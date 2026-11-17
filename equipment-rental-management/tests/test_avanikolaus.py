@@ -383,7 +383,7 @@ def test_recognize_overdue_equipment(client):
 
     store.rentals[rental_id].due_date = date.today() - timedelta(days=1)
 
-    result = client.get("/rentals/overdue")
+    result = client.get("/rentals/overdue", json={"email": "ava.niko@cisc.com"})
     assert result.status_code == 200
 
     overdue_rentals = result.get_json()
@@ -426,7 +426,7 @@ def test_recognize_equipment_returned_on_time(client):
     result = client.put(f"/rentals/{rental_id}/return")
     assert result.status_code == 200
 
-    result = client.get("/rentals/overdue")
+    result = client.get("/rentals/overdue", json={"email": "ava.niko@cisc.com"})
 
     assert result.status_code == 200
     assert result.get_json() == []
