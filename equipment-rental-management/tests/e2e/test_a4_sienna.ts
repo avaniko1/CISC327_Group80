@@ -25,7 +25,7 @@ test('Rent Equipment', async ({ page }) => {
     await page.getByRole('button', { name: 'Check Out' }).click();
 
     const rental_list = page.getByRole('list', { name: 'Rentals' });
-    await expect(page.getByText('1')).toBeVisible();
+    await expect(rental_list).toHaveCount(1);
 });
 
 test('Rent non-ex Equipment', async ({ page }) => {
@@ -46,5 +46,5 @@ test('Rent non-ex Equipment', async ({ page }) => {
     await page.getByRole('button', { name: 'Check Out' }).click();
 
     const rental_list = page.getByRole('list', { name: 'Rentals' });
-    await expect(page.getByText('1')).toBeVisible();
+    await expect(rental_list).toHaveCount(0);
 });
